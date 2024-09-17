@@ -129,21 +129,19 @@ namespace nl
 * `mMemoryCtx` - memory context that can be used to work with `ScMemory`.
 
 If sc-agent finished work without any errors, then it must return `SC_RESULT_OK`, otherwise - one of code error `SC_RESULT_ERROR_...`.
-Result of agent will be automaticaly added into specified set:
+Result of agent will be automatically added into specified set:
 
 <scg src="../images/sc_result_ok_example.gwf"></scg>
 
 Possible result sets:
 
 * `sc_result_error` - unknown error;
-* `sc_result_ok` - no any errors (successfull finish);
+* `sc_result_ok` - no any errors (successfully finish);
 * `sc_result_error_invalid_params` - invalid parameters of agent;
 * `sc_result_error_invalid_type` - invalid type error (invalid type of data of something else);
 * `sc_result_error_io` - input/output error (can't read/write something from/to any source);
 * `sc_result_invalid_state` - invalid state of processing data;
-* `sc_result_error_not_found` - something wasn't found (for example: can't resolve element by identifier);
-* `sc_result_error_no_write_rights` - agent hasn't rights to write something;
-* `sc_result_error_no_read_rights` - agent hans't rights to read something.
+* `sc_result_error_not_found` - something wasn't found (for example: can't resolve element by identifier).
 
 
 **It's important:**
@@ -361,3 +359,36 @@ ScWaitActionFinished waiter(ctx, commandAddr);
 waiter.Wait();
 ...
 ```
+
+## ScAgent Implementations
+
+### Get Decomposition Agent
+
+It is an agent that get decomposition of subject domain in JSON format
+
+**Action class:**
+
+`action_get_decomposition`
+
+**Parameters:**
+
+1. `subjDomain` - subject domain node;
+1. `level` - link that stores decomposition level (unnecessary parameter, by default value of `level` parameter is `1`);
+1. `lang` - language node;
+1. `relation of decomposition` - relation node by which an entity is decomposed.
+
+**Example:**
+
+Example of an input structure:
+
+<img src="images/GetDecompositionAgentInput.png"/></img>
+
+Example of an output structure:
+
+<img src="images/GetDecompositionAgentOutput.png"></img>
+
+**Result:**
+
+* `SC_RESULT_OK` - result link is generated.
+* `SC_RESULT_ERROR` - internal error in the link generation.
+* `SC_RESULT_ERROR_INVALID_PARAMS` - internal error. This happens when subject domain node is invalid.

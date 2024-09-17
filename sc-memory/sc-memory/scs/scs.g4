@@ -63,7 +63,7 @@ contour[ElementHandle contourHandle = ElementHandle()]
       m_parser->ProcessContourBegin();
     }
     ( (sentence_wrap
-	| (sentence_lvl_4_list_item[$ctx->handle] ';;'))* )
+	| (sentence_lvl_4_list_item[$ctx->handle] (';' sentence_lvl_4_list_item[$ctx->handle])* ';;') )* )
     CONTOUR_END
     {
       m_parser->ProcessContourEnd($ctx->handle);
@@ -135,7 +135,7 @@ sentence_assign
   ;
 
 sentence_assign_contour
-  : a=idtf_system '=' contour[$ctx->a->handle]
+  : a=idtf_system '=' contour[$ctx->a->handle] (';' internal_sentence[$ctx->a->handle])*
   ;
     
 idtf_lvl1_preffix returns [std::string text]
@@ -356,7 +356,7 @@ ALIAS_SYMBOLS
   ;
 
 fragment CONTENT_ESCAPED
-  : '\\' ('[' | ']' | '\\')
+  : '\\' ('[' | ']' | '\\' | '*' )
   ;
 
 fragment CONTENT_SYBMOL
@@ -364,7 +364,7 @@ fragment CONTENT_SYBMOL
   ;
 
 fragment CONTENT_SYBMOL_FIRST_END
-  : (CONTENT_ESCAPED | ~('[' | ']' | '\\' | '*'))
+  : (CONTENT_ESCAPED | ~('[' | ']' | '\\' | '*' ))
   ;
 
 CONTOUR_BEGIN

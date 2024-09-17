@@ -91,15 +91,21 @@ bool AgentUtils::applyAction(
   return applyAction(ms_context, actionNode, waitTime);
 }
 
-bool AgentUtils::applyAction(ScMemoryContext * ms_context, const ScAddr & actionNode, const sc_uint32 & waitTime)
+bool AgentUtils::applyAction(
+    ScMemoryContext * ms_context,
+    const ScAddr & actionNode,
+    const sc_uint32 & waitTime,
+    ScAddr onEventClassAddr)
 {
+  if (!onEventClassAddr.IsValid())
+    onEventClassAddr = scAgentsCommon::CoreKeynodes::question_initiated;
+
   auto check = [](ScAddr const & listenAddr, ScAddr const & edgeAddr, ScAddr const & otherAddr) {
     return otherAddr == scAgentsCommon::CoreKeynodes::question_finished;
   };
 
-  auto initialize = [ms_context, actionNode]() {
-    ms_context->CreateEdge(
-        ScType::EdgeAccessConstPosPerm, scAgentsCommon::CoreKeynodes::question_initiated, actionNode);
+  auto initialize = [ms_context, onEventClassAddr, actionNode]() {
+    ms_context->CreateEdge(ScType::EdgeAccessConstPosPerm, onEventClassAddr, actionNode);
   };
 
   ScWaitCondition<ScEventAddInputEdge> waiter(*ms_context, actionNode, SC_WAIT_CHECK(check));
@@ -126,7 +132,7 @@ ScAddr AgentUtils::getActionResultIfExists(
   ScAddr actionNode = formActionNode(ms_context, actionClass, params);
 
   ScAddr result;
-  if (applyAction(ms_context, actionNode))
+  if (applyAction(ms_context, actionNode, waitTime))
     result = IteratorUtils::getAnyByOutRelation(ms_context, actionNode, CoreKeynodes::nrel_answer);
 
   return result;
@@ -140,7 +146,7 @@ ScAddr AgentUtils::getActionResultIfExists(
   SC_CHECK_PARAM(actionNode, ("Invalid action node address"));
 
   ScAddr result;
-  if (applyAction(ms_context, actionNode))
+  if (applyAction(ms_context, actionNode, waitTime))
     result = IteratorUtils::getAnyByOutRelation(ms_context, actionNode, CoreKeynodes::nrel_answer);
 
   return result;
@@ -180,10 +186,10 @@ void AgentUtils::finishAgentWork(ScMemoryContext * ms_context, const ScAddr & qu
 {
   SC_CHECK_PARAM(questionNode, ("Invalid question node address"));
 
-  ms_context->CreateEdge(ScType::EdgeAccessConstPosPerm, CoreKeynodes::question_finished, questionNode);
   ScAddr statusNode =
       isSuccess ? CoreKeynodes::question_finished_successfully : CoreKeynodes::question_finished_unsuccessfully;
   ms_context->CreateEdge(ScType::EdgeAccessConstPosPerm, statusNode, questionNode);
+  ms_context->CreateEdge(ScType::EdgeAccessConstPosPerm, CoreKeynodes::question_finished, questionNode);
 }
 
 }  // namespace utils
